@@ -22,11 +22,8 @@ export class AuthService {
       return { message: 'User already exists', access_token: '', user: null };
     }
   
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user: UserDocument = await this.usersService.create(email, hashedPassword, name);
-  
+    const user: UserDocument = await this.usersService.create(email, password, name);
     const payload = { email: user.email, sub: user._id };
-  
     const { password: _, ...userWithoutPassword } = user.toObject();
   
     return {
@@ -35,13 +32,10 @@ export class AuthService {
       user: userWithoutPassword
     };
   }
-  
 
   async login(loginDto: LoginDto): Promise<{ message: string; access_token: string; user: Partial<User> | null }> {
     const user: UserDocument | null = await this.usersService.findOne(loginDto.email);
-
-    console.log('Login attempt:', { email: loginDto.email, userExists: !!user });
-
+    
     if (!user) {
       return {
         message: 'Invalid credentials',
@@ -51,7 +45,6 @@ export class AuthService {
     }
 
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
-
     console.log('Password comparison result:', isPasswordValid);
 
     if (!isPasswordValid) {
@@ -63,7 +56,6 @@ export class AuthService {
     }
 
     const payload = { email: user.email, sub: user._id };
-
     const { password: _, ...userWithoutPassword } = user.toObject();
 
     return {
@@ -71,15 +63,5 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
       user: userWithoutPassword,
     };
-  }
-  
-
-  async validateUser(email: string, pass: string): Promise<{ message: string; access_token: string; user: Partial<User> | null }> {
-    const user: UserDocument | null = await this.usersService.findOne(email);
-    if (user && (await bcrypt.compare(pass, user.password))) {
-      const { password, ...result } = user.toObject(); 
-      return result;
-    }
-    return null;
   }
 }
