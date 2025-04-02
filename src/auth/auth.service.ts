@@ -39,19 +39,33 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<{ message: string; access_token: string; user: Partial<User> | null }> {
     const user: UserDocument | null = await this.usersService.findOne(loginDto.email);
-    console.log(loginDto)
-    if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+
+    console.log('Login attempt:', { email: loginDto.email, userExists: !!user });
+
+    if (!user) {
       return {
         message: 'Invalid credentials',
         access_token: '',
         user: null,
       };
     }
-  
+
+    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+
+    console.log('Password comparison result:', isPasswordValid);
+
+    if (!isPasswordValid) {
+      return {
+        message: 'Invalid credentials',
+        access_token: '',
+        user: null,
+      };
+    }
+
     const payload = { email: user.email, sub: user._id };
-  
+
     const { password: _, ...userWithoutPassword } = user.toObject();
-  
+
     return {
       message: 'Login successful',
       access_token: this.jwtService.sign(payload),
