@@ -37,24 +37,28 @@ export class AuthService {
   }
   
 
-  async login(loginDto: LoginDto): Promise<any> {
+  async login(loginDto: LoginDto): Promise<{ message: string; access_token: string; user: Partial<User> | null }> {
     const user: UserDocument | null = await this.usersService.findOne(loginDto.email);
+    console.log(loginDto)
     if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
-      return { 
+      return {
         message: 'Invalid credentials',
         access_token: '',
-        user: null, 
-      }
+        user: null,
+      };
     }
-    const payload = { email: user.email, sub: user._id }; 
-
-    const { password: _, ...userWithoutPassword } = user.toObject();    
+  
+    const payload = { email: user.email, sub: user._id };
+  
+    const { password: _, ...userWithoutPassword } = user.toObject();
+  
     return {
-        user: userWithoutPassword,
-        message: 'Login successful',
+      message: 'Login successful',
       access_token: this.jwtService.sign(payload),
+      user: userWithoutPassword,
     };
   }
+  
 
   async validateUser(email: string, pass: string): Promise<{ message: string; access_token: string; user: Partial<User> | null }> {
     const user: UserDocument | null = await this.usersService.findOne(email);
