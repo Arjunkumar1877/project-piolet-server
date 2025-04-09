@@ -1,39 +1,72 @@
-import { IsString, IsOptional, IsEmail, IsDate, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsEmail, IsDate, IsNotEmpty, IsEnum, IsArray, IsMongoId } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class CreateTeamMemberDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  role: string;
+
+  @IsEmail()
+  email: string;
+}
 
 export class CreateProjectDto {
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Project name is required' })
   projectName: string;
 
-  @IsOptional()
   @IsString()
-  description?: string;
+  @IsNotEmpty({ message: 'Description is required' })
+  description: string;
 
-  @IsOptional()
   @IsString()
-  clientName?: string;
+  @IsNotEmpty({ message: 'Client name is required' })
+  clientName: string;
 
-  @IsOptional()
   @IsEmail()
-  clientEmail?: string;
+  @IsNotEmpty({ message: 'Client email is required' })
+  clientEmail: string;
 
-  @IsOptional()
   @IsString()
-  clientPhone?: string;
+  @IsNotEmpty({ message: 'Phone number is required' })
+  clientPhone: string;
 
-  @IsOptional()
   @IsString()
-  clientAddress?: string;
+  @IsNotEmpty({ message: 'Address is required' })
+  clientAddress: string;
 
   @IsDate()
-  @IsNotEmpty()
+  @Type(() => Date)
+  @IsNotEmpty({ message: 'Start date is required' })
   startDate: Date;
 
   @IsDate()
-  @IsNotEmpty()
+  @Type(() => Date)
+  @IsNotEmpty({ message: 'End date is required' })
   endDate: Date;
 
-  @IsOptional()
+  @IsEnum(['active', 'completed', 'on-hold', 'cancelled'])
+  @IsNotEmpty({ message: 'Status is required' })
+  status: 'active' | 'completed' | 'on-hold' | 'cancelled';
+
   @IsString()
-  status?: string;
+  @IsNotEmpty({ message: 'Budget is required' })
+  budget: string;
+
+  @IsEnum(['low', 'medium', 'high'])
+  @IsNotEmpty({ message: 'Priority is required' })
+  priority: 'low' | 'medium' | 'high';
+
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  teamMembers?: string[];
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
 }
