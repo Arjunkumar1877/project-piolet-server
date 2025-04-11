@@ -2,6 +2,10 @@ import { IsString, IsOptional, IsEmail, IsDate, IsNotEmpty, IsEnum, IsArray, IsM
 import { Type } from 'class-transformer';
 
 export class CreateTeamMemberDto {
+  @IsMongoId()
+  @IsNotEmpty({ message: 'User ID is required' })
+  userId: string;
+
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -15,6 +19,10 @@ export class CreateTeamMemberDto {
 }
 
 export class CreateProjectDto {
+  @IsMongoId()
+  @IsNotEmpty({ message: 'User ID is required' })
+  userId: string;
+
   @IsString()
   @IsNotEmpty({ message: 'Project name is required' })
   projectName: string;

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Project, ProjectDocument } from 'src/schemas/project-schema';
-import { CreateTeamMemberDto } from './project.dto';
+import { CreateProjectDto, CreateTeamMemberDto } from './project.dto';
 import { TeamMember, TeamMemberDocument } from 'src/schemas/team-member.schema';
 
 @Injectable()
@@ -12,9 +12,19 @@ export class ProjectsService {
     @InjectModel(TeamMember.name) private teamMemberModel: Model<TeamMemberDocument>
   ) {}
 
-  async create(createProjectDto: any): Promise<Project> {
+  async create(createProjectDto: CreateProjectDto): Promise<Project> {
     const createdProject = new this.projectModel(createProjectDto);
-    return createdProject.save();
+    await createdProject.save();
+
+    await Promise.all(createProjectDto.teamMembers.map(async (teamMemberId) => {
+      await this.teamMemberModel.findByIdAndUpdate(
+        teamMemberId,
+        { $push: { projects: createdProject._id } },
+        { new: true }
+      );
+    }));
+
+    return createdProject;
   }
 
   async createTeamMembers(createTeamMembersDto: CreateTeamMemberDto): Promise<TeamMember> {
@@ -22,7 +32,11 @@ export class ProjectsService {
     return createdTeamMembers;
   }
 
-  async findAll(): Promise<Project[]> {
-    return this.projectModel.find().exec();
+  async findAll(id: string): Promise<Project[]> {
+    return this.projectModel.find({ userId: id }).exec();
+  }
+
+  async getTeamMembers(id: string): Promise<TeamMember[]> {
+    return this.teamMemberModel.find({ userId: id }).exec();
   }
 }

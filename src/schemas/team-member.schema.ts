@@ -5,6 +5,9 @@ export type TeamMemberDocument = TeamMember & Document;
 
 @Schema({ timestamps: true })
 export class TeamMember {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId;
+
   @Prop({ required: true })
   name: string;
 
