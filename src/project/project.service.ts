@@ -32,11 +32,11 @@ export class ProjectsService {
     return createdTeamMembers;
   }
 
-  async findAll(): Promise<Project[]> {
-    return this.projectModel.find().exec();
+  async findAll(id: string): Promise<Project[]> {
+    return this.projectModel.find({ userId: id }).exec();
   }
 
-  async getTeamMembers(): Promise<TeamMember[]> {
-    return this.teamMemberModel.find().exec();
+  async getTeamMembers(id: string): Promise<TeamMember[]> {
+    return this.teamMemberModel.find({ userId: id }).exec();
   }
 }
