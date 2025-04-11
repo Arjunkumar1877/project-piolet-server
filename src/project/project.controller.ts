@@ -16,6 +16,10 @@ export class ProjectsController {
     return this.projectsService.createTeamMembers(createTeamMembers)
   }
 
+  @Get('team-members')
+  getTeamMembers(){
+    return this.projectsService.getTeamMembers()
+  }
 
   @Get()
   findAll() {

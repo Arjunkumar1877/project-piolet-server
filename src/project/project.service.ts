@@ -25,4 +25,8 @@ export class ProjectsService {
   async findAll(): Promise<Project[]> {
     return this.projectModel.find().exec();
   }
+
+  async getTeamMembers(): Promise<TeamMember[]> {
+    return this.teamMemberModel.find().exec();
+  }
 }
