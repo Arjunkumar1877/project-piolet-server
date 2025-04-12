@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Project, ProjectDocument } from 'src/schemas/project-schema';
 import { CreateProjectDto, CreateTeamMemberDto } from './project.dto';
 import { TeamMember, TeamMemberDocument } from 'src/schemas/team-member.schema';
@@ -38,5 +38,14 @@ export class ProjectsService {
 
   async getTeamMembers(id: string): Promise<TeamMember[]> {
     return this.teamMemberModel.find({ userId: id }).exec();
+  }
+
+  async getProjectDetails(id: string): Promise<Project>{
+    if (!Types.ObjectId.isValid(id)) {
+      throw new Error('Invalid project ID format');
+    }
+    const objectId = new Types.ObjectId(id);
+    const project = (await this.projectModel.findById(objectId).exec()).populate('teamMembers');
+    return project;
   }
 }
