@@ -53,6 +53,9 @@ export class Project {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'TeamMember' }] })
   teamMembers: Types.ObjectId[];
 
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Task' }] })
+  tasks: Types.ObjectId[];
+
   @Prop()
   notes?: string;
 }
