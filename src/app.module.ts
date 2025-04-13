@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import { ProjectsModule } from './project/project.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { TaskModule } from './task/task.module';
+import { TeamMembersModule } from './team-members/team-members.module';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { TaskModule } from './task/task.module';
     ProjectsModule,
     UsersModule,
     AuthModule,
-    TaskModule,
+    TeamMembersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
