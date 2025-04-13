@@ -8,6 +8,9 @@ export type TaskDocument = Task & Document;
 @Schema({ timestamps: true })
 export class Task {
   @Prop({ required: true })
+  ticketNumber: string;
+
+  @Prop({ required: true })
   title: string;
 
   @Prop()
@@ -18,6 +21,9 @@ export class Task {
 
   @Prop({ default: 'pending' })
   status: string;
+
+  @Prop()
+  startDate: Date;
 
   @Prop()
   dueDate: Date;

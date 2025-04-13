@@ -1,42 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Project, ProjectDocument } from 'src/schemas/project-schema';
-import { CreateProjectDto, CreateTeamMemberDto } from './project.dto';
-import { TeamMember, TeamMemberDocument } from 'src/schemas/team-member.schema';
+import { CreateProjectDto } from './project.dto';
 
 @Injectable()
 export class ProjectsService {
   constructor(
-    @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
-    @InjectModel(TeamMember.name) private teamMemberModel: Model<TeamMemberDocument>
+    @InjectModel(Project.name) private projectModel: Model<ProjectDocument>
   ) {}
 
   async create(createProjectDto: CreateProjectDto): Promise<Project> {
     const createdProject = new this.projectModel(createProjectDto);
-    await createdProject.save();
-
-    await Promise.all(createProjectDto.teamMembers.map(async (teamMemberId) => {
-      await this.teamMemberModel.findByIdAndUpdate(
-        teamMemberId,
-        { $push: { projects: createdProject._id } },
-        { new: true }
-      );
-    }));
-
-    return createdProject;
-  }
-
-  async createTeamMembers(createTeamMembersDto: CreateTeamMemberDto): Promise<TeamMember> {
-    const createdTeamMembers = await this.teamMemberModel.create(createTeamMembersDto);
-    return createdTeamMembers;
+    return createdProject.save();
   }
 
   async findAll(id: string): Promise<Project[]> {
     return this.projectModel.find({ userId: id }).exec();
   }
 
-  async getTeamMembers(id: string): Promise<TeamMember[]> {
-    return this.teamMemberModel.find({ userId: id }).exec();
+  async getProjectDetails(id: string): Promise<Project> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new Error('Invalid project ID format');
+    }
+    const objectId = new Types.ObjectId(id);
+    const project = await this.projectModel.findById(objectId).populate('teamMembers').exec();
+    return project;
   }
 }

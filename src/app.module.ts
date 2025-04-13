@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import { ProjectsModule } from './project/project.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { TeamMembersModule } from './team-members/team-members.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AuthModule } from './auth/auth.module';
     ProjectsModule,
     UsersModule,
     AuthModule,
+    TeamMembersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
