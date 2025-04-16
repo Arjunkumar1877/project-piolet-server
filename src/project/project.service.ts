@@ -23,8 +23,14 @@ export class ProjectsService {
     if (!Types.ObjectId.isValid(id)) {
       throw new Error('Invalid project ID format');
     }
-    const objectId = new Types.ObjectId(id);
-    const project = await this.projectModel.findById(objectId).populate('teamMembers').exec();
+  
+    const project = await this.projectModel
+      .findById(id)
+      .populate('tasks')
+      .populate('teamMembers')
+      .exec();
+  
     return project;
   }
+  
 }
