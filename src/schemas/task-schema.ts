@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
 import { Project } from './project-schema';
+import { TeamMember } from './team-member.schema';
 
 export type TaskDocument = Task & Document;
 
@@ -27,6 +28,9 @@ export class Task {
 
   @Prop()
   dueDate: Date;
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'TeamMember' }], default: [] })
+  assignedTo: TeamMember[];
 
   @Prop({ type: Date })
   createdAt?: Date; 

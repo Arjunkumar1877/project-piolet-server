@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDate, IsMongoId } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDate, IsMongoId, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateTaskDto {
@@ -17,6 +17,11 @@ export class CreateTaskDto {
   @IsMongoId()
   @IsNotEmpty()
   project: string;
+  
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  assignedTo?: string[];
 
   @IsEnum(['pending', 'in-progress', 'completed', 'cancelled'])
   @IsOptional()
@@ -49,6 +54,11 @@ export class UpdateTaskDto {
   @IsMongoId()
   @IsOptional()
   project?: string;
+
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  assignedTo?: string[];
 
   @IsEnum(['pending', 'in-progress', 'completed', 'cancelled'])
   @IsOptional()

@@ -23,16 +23,26 @@ export class TaskService {
       }
       
     async findAll(id: string): Promise<Task[]> {
-        const tasks = await this.taskModel.find({ project: id }).populate('project').exec();
+        const tasks = await this.taskModel
+            .find({ project: id })
+            .populate('assignedTo')
+            .exec();
         return tasks;
     }
 
     async findOne(id: string): Promise<Task> {
-        return this.taskModel.findById(id).populate('project').exec();
+        return this.taskModel
+            .findById(id)
+            .populate('project')
+            .populate('assignedTo')
+            .exec();
     }
 
     async update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
-        return this.taskModel.findByIdAndUpdate(id, updateTaskDto, { new: true }).exec();
+        return this.taskModel
+            .findByIdAndUpdate(id, updateTaskDto, { new: true })
+            .populate('assignedTo')
+            .exec();
     }
 
     async delete(id: string): Promise<Task> {
