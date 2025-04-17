@@ -23,9 +23,14 @@ export class CreateTaskDto {
   @IsOptional()
   assignedTo?: string[];
 
-  @IsEnum(['pending', 'in-progress', 'completed', 'cancelled'])
+  @IsEnum(['todo', 'in-progress', 'completed', 'cancelled'])
   @IsOptional()
-  status?: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+  status?: 'todo' | 'in-progress' | 'completed' | 'cancelled';
+
+  @IsEnum(['high', 'medium', 'low'])
+  @IsOptional()
+  priority?: 'high' | 'medium' | 'low';
+
 
   @IsDate()
   @Type(() => Date)
@@ -60,9 +65,9 @@ export class UpdateTaskDto {
   @IsOptional()
   assignedTo?: string[];
 
-  @IsEnum(['pending', 'in-progress', 'completed', 'cancelled'])
+  @IsEnum(['todo', 'in-progress', 'completed', 'cancelled'])
   @IsOptional()
-  status?: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+  status?: 'todo' | 'in-progress' | 'completed' | 'cancelled';
 
   @IsDate()
   @Type(() => Date)
