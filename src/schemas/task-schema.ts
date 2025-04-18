@@ -20,8 +20,11 @@ export class Task {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Project' })
   project: Project;
 
-  @Prop({ default: 'pending' })
+  @Prop({ default: 'todo' })
   status: string;
+
+  @Prop({ default: 'low' })
+  priority: string;
 
   @Prop()
   startDate: Date;
