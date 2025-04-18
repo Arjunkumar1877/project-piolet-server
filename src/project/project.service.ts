@@ -16,7 +16,7 @@ export class ProjectsService {
   }
 
   async findAll(id: string): Promise<Project[]> {
-    return this.projectModel.find({ userId: id }).exec();
+    return this.projectModel.find({ userId: id }).populate('tasks').exec();
   }
 
   async getProjectDetails(id: string): Promise<Project> {
