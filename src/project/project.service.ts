@@ -33,4 +33,21 @@ export class ProjectsService {
     return project;
   }
   
+  async update(id: string, updateProjectDto: CreateProjectDto): Promise<Project> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new Error('Invalid project ID format');
+    }
+
+    const updatedProject = await this.projectModel
+      .findByIdAndUpdate(id, updateProjectDto, { new: true })
+      .populate('tasks')
+      .populate('teamMembers')
+      .exec();
+
+    if (!updatedProject) {
+      throw new Error('Project not found');
+    }
+
+    return updatedProject;
+  }
 }
