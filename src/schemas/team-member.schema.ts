@@ -14,7 +14,7 @@ export class TeamMember {
   @Prop({ required: true })
   role: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   email: string;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Project' }] })

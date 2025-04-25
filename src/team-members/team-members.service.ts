@@ -17,7 +17,14 @@ export class TeamMembersService {
 
   async createTeamMembers(
     createTeamMembersDto: CreateTeamMemberDto,
-  ): Promise<TeamMember> {
+  ): Promise<TeamMember | {message: string}> {
+    const exisitingTeamMember = this.teamMemberModel.findOne({_id: createTeamMembersDto.userId, email: createTeamMembersDto.email})
+
+    if(exisitingTeamMember){
+      return {
+       message:  'Teammember already exisit with this email'
+      }
+    }
     const createdTeamMembers =
       await this.teamMemberModel.create(createTeamMembersDto);
     return createdTeamMembers;
