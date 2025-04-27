@@ -17,17 +17,26 @@ export class TeamMembersService {
 
   async createTeamMembers(
     createTeamMembersDto: CreateTeamMemberDto,
-  ): Promise<TeamMember | {message: string}> {
-    const exisitingTeamMember = this.teamMemberModel.findOne({_id: createTeamMembersDto.userId, email: createTeamMembersDto.email})
+  ): Promise<TeamMember | {saved: boolean, message: string, data: TeamMember}> {
+    const existingTeamMember = await this.teamMemberModel.findOne({
+      userId: createTeamMembersDto.userId,
+      email: createTeamMembersDto.email
+    });
 
-    if(exisitingTeamMember){
+    if(existingTeamMember){
       return {
-       message:  'Teammember already exisit with this email'
+        saved: false,
+        message: 'Team member already exists with this email.',
+        data: existingTeamMember
       }
     }
     const createdTeamMembers =
       await this.teamMemberModel.create(createTeamMembersDto);
-    return createdTeamMembers;
+    return {
+      saved: true,
+      message: 'Team member created successfully',
+      data: createdTeamMembers
+    };
   }
 
   async getTeamMembers(id: string): Promise<TeamMember[]> {
