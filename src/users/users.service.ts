@@ -9,13 +9,22 @@ import { UserDocument } from 'src/schemas/user-schema';
 export class UsersService {
   constructor(@InjectModel('User') private userModel: Model<UserDocument>) {} // Use string 'User' for name
 
-  async create(email: string, password: string, name: string): Promise<UserDocument> {
+  async create(email: string, password: string, name: string, firebaseId: string): Promise<UserDocument> {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new this.userModel({ email, password: hashedPassword, name });
+    const user = new this.userModel({ 
+      email, 
+      password: hashedPassword, 
+      name,
+      firebaseId 
+    });
     return user.save();
   }
 
   async findOne(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email }).exec();
+  }
+
+  async findByFirebaseId(firebaseId: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ firebaseId }).exec();
   }
 }
