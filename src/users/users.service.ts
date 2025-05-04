@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { UserDocument } from 'src/schemas/user-schema';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -26,5 +27,21 @@ export class UsersService {
 
   async findByFirebaseId(firebaseId: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ firebaseId }).exec();
+  }
+
+  async update(firebaseId: string, updateUserDto: UpdateUserDto): Promise<UserDocument | null> {
+    const updateData: any = { ...updateUserDto };
+    
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+
+    return this.userModel
+      .findOneAndUpdate(
+        { firebaseId },
+        { $set: updateData },
+        { new: true }
+      )
+      .exec();
   }
 }
