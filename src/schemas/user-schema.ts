@@ -15,6 +15,9 @@ export class User {
   @Prop()
   name: string;
 
+  @Prop({ unique: true, sparse: true })
+  firebaseId: string;
+
   @Prop({ default: Date.now })
   createdAt: Date;
 }

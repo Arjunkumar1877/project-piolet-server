@@ -1,36 +1,52 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from 'src/schemas/user-schema';
-import { LoginDto } from './auth.dto';
+import { LoginDto, VerifyTokenDto } from './auth.dto';
+import { Auth, User as FirebaseUser } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Auth as FirebaseAdminAuth } from 'firebase-admin/auth';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    @Inject('FIREBASE_AUTH') private firebaseAuth: Auth,
+    @Inject('FIREBASE_ADMIN_AUTH') private firebaseAdminAuth: FirebaseAdminAuth,
   ) {}
 
   async signup(
     email: string,
     password: string,
     name: string
-  ): Promise<{ message: string; access_token: string; user: Partial<User> | null }> {
+  ): Promise<{ message: string; access_token: string; user: Partial<User> | null; firebaseUser: FirebaseUser | null }> {
     const userExists: UserDocument | null = await this.usersService.findOne(email);
+
     if (userExists) {
-      return { message: 'User already exists', access_token: '', user: null };
+      return { message: 'User already exists', access_token: '', user: null, firebaseUser: null };
     }
-  
-    const user: UserDocument = await this.usersService.create(email, password, name);
-    const payload = { email: user.email, sub: user._id };
-    const { password: _, ...userWithoutPassword } = user.toObject();
-  
-    return {
-      message: 'User created successfully',
-      access_token: this.jwtService.sign(payload),
-      user: userWithoutPassword
-    };
+
+    try {
+      // Create user in Firebase
+      const firebaseUserCredential = await createUserWithEmailAndPassword(this.firebaseAuth, email, password);
+      const firebaseId = firebaseUserCredential.user.uid;
+     
+      // Create user in our database with Firebase ID
+      const user: UserDocument = await this.usersService.create(email, password, name, firebaseId);
+      const payload = { email: user.email, sub: user._id };
+      const { password: _, ...userWithoutPassword } = user.toObject();
+
+      return {
+        message: 'User created successfully',
+        access_token: this.jwtService.sign(payload),
+        user: userWithoutPassword,
+        firebaseUser: firebaseUserCredential.user,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Failed to create user: ' + error.message);
+    }
   }
 
   async login(loginDto: LoginDto): Promise<{ message: string; access_token: string; user: Partial<User> | null }> {
@@ -63,5 +79,23 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
       user: userWithoutPassword,
     };
+  }
+
+  async verifyToken(verifyTokenDto: VerifyTokenDto): Promise<{ user: Partial<User> | null; message: string }> {
+    try {
+      const decodedToken = await this.firebaseAdminAuth.verifyIdToken(verifyTokenDto.token);
+      const firebaseId = decodedToken.uid;
+
+      const user = await this.usersService.findByFirebaseId(firebaseId);
+      
+      if (!user) {
+        return { user: null, message: 'User not found' };
+      }
+
+      const { password: _, ...userWithoutPassword } = user.toObject();
+      return { user: userWithoutPassword, message: 'User verified successfully' };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid token: ' + error.message);
+    }
   }
 }
