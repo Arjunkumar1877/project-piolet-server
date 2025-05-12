@@ -7,6 +7,8 @@ import { LoginDto, VerifyTokenDto } from './auth.dto';
 import { Auth, User as FirebaseUser } from 'firebase/auth';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { Auth as FirebaseAdminAuth } from 'firebase-admin/auth';
+import { generateOTP } from 'src/helpers/otpGenerator';
+import { sendVerifyMail } from 'src/helpers/nodemailer';
 
 @Injectable()
 export class AuthService {
@@ -21,11 +23,11 @@ export class AuthService {
     email: string,
     password: string,
     name: string
-  ): Promise<{ message: string; access_token: string; user: Partial<User> | null; firebaseUser: FirebaseUser | null }> {
+  ): Promise<{ message: string; signedUp: boolean}> {
     const userExists: UserDocument | null = await this.usersService.findOne(email);
 
     if (userExists) {
-      return { message: 'User already exists', access_token: '', user: null, firebaseUser: null };
+      return { message: 'User already exists' , signedUp: false };
     }
 
     try {
@@ -35,14 +37,14 @@ export class AuthService {
      
       // Create user in our database with Firebase ID
       const user: UserDocument = await this.usersService.create(email, password, name, firebaseId);
-      const payload = { email: user.email, sub: user._id };
-      const { password: _, ...userWithoutPassword } = user.toObject();
+      const OTP = generateOTP()
+      await sendVerifyMail(email, OTP)
+      user.otp = OTP
+      await user.save()
 
       return {
-        message: 'User created successfully',
-        access_token: this.jwtService.sign(payload),
-        user: userWithoutPassword,
-        firebaseUser: firebaseUserCredential.user,
+        message: 'User created successfully and OTP sent to email',
+        signedUp: true
       };
     } catch (error) {
       throw new UnauthorizedException('Failed to create user: ' + error.message);

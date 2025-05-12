@@ -15,6 +15,9 @@ export class User {
   @Prop()
   name: string;
 
+  @Prop({ default: null })
+  otp: string;
+
   @Prop({ unique: true, sparse: true })
   firebaseId: string;
 
