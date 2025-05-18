@@ -8,10 +8,10 @@ interface OTPOptions {
 }
 
 export const generateOTP = (length: number = 6, options: OTPOptions = {
-  upperCaseAlphabets: true,
+  upperCaseAlphabets: false,
   lowerCaseAlphabets: false,
   specialChars: false,
-  digits: false,
+  digits: true,
 }): string => {
   return otpGenerator.generate(length, options);
 };
