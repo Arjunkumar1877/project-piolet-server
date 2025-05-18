@@ -24,61 +24,70 @@ export class AuthService {
     password: string,
     name: string,
   ): Promise<{ message: string; signedUp: boolean }> {
-    const userExists: UserDocument | null =
-      await this.usersService.findOne(email);
-
-    if (userExists) {
-      return { message: 'User already exists', signedUp: false };
-    }
-
     try {
-      // Check if user exists in Firebase
-      try {
-        const firebaseUser = await this.firebaseAdminAuth.getUserByEmail(email);
-        if (firebaseUser) {
-          return { message: 'User already exists in Firebase', signedUp: false };
+      const userExists = await this.usersService.findOne(email);
+      let firebaseUser = null;
+  
+      // Only fetch Firebase user if local user exists
+      if (userExists) {
+        try {
+          firebaseUser = await this.firebaseAdminAuth.getUserByEmail(email);
+        } catch (_) {
+          // Firebase user not found, ignore
         }
-      } catch (error) {
-        // If error is not "user not found", throw it
-        if (error.code !== 'auth/user-not-found') {
-          throw error;
+  
+        if (userExists.emailVerified && firebaseUser) {
+          return { message: 'User already exists', signedUp: false };
+        }
+  
+        // Resend OTP for unverified users
+        if (!userExists.emailVerified && firebaseUser) {
+          const OTP = generateOTP();
+          await sendVerifyMail(email, OTP);
+          userExists.otp = OTP;
+          userExists.name = name;
+          await userExists.save();
+  
+          return {
+            message: 'OTP sent to email',
+            signedUp: true,
+          };
         }
       }
-
-      // Create user in Firebase
+  
+      // Create Firebase user
       const firebaseUserCredential = await createUserWithEmailAndPassword(
         this.firebaseAuth,
         email,
         password,
       );
-      const firebaseId = firebaseUserCredential.user.uid;
-
-      // Create user in our database with Firebase ID
-      const user: UserDocument = await this.usersService.create(
+  
+      // Create user in DB
+      const user = await this.usersService.create(
         email,
         password,
         name,
-        firebaseId,
+        firebaseUserCredential.user.uid,
       );
+  
+      // Generate and send OTP
       const OTP = generateOTP();
       await sendVerifyMail(email, OTP);
       user.otp = OTP;
       await user.save();
-
+  
       return {
         message: 'User created successfully and OTP sent to email',
         signedUp: true,
       };
     } catch (error) {
       throw new UnauthorizedException(
-        'Failed to create user: ' + error.message,
+        'Failed to create user: ' + (error?.message || 'Unknown error'),
       );
     }
   }
-
-  async login(
-    loginDto: LoginDto,
-  ): Promise<{
+  
+  async login(loginDto: LoginDto): Promise<{
     message: string;
     access_token: string;
     user: Partial<User> | null;
