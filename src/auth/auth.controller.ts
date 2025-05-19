@@ -1,7 +1,7 @@
 import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { SignupDto, LoginDto, VerifyTokenDto } from './auth.dto';
+import { SignupDto, LoginDto, VerifyTokenDto, VerifyOtpDto } from './auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -9,7 +9,7 @@ export class AuthController {
 
   @Post('signup')
   async signup(@Body() signupDto: SignupDto) {
-    return this.authService.signup(signupDto.email, signupDto.password, signupDto.name);
+    return this.authService.signup({ signupDto });
   }
 
   @Post('login')
@@ -20,6 +20,16 @@ export class AuthController {
   @Post('verify-token')
   async verifyToken(@Body() verifyTokenDto: VerifyTokenDto) {
     return this.authService.verifyToken(verifyTokenDto);
+  }
+
+  @Post('verify-otp')
+  async verifyOtp(@Body() verifyOtp: VerifyOtpDto) {
+    return this.authService.verifyOtp(verifyOtp);
+  }
+
+  @Post('google-auth')
+  async googleSign(@Body() signupDto: SignupDto) {
+    return this.authService.googleSign({ signupDto });
   }
 
   @UseGuards(AuthGuard('jwt'))
