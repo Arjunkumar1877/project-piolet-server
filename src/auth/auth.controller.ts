@@ -9,7 +9,7 @@ export class AuthController {
 
   @Post('signup')
   async signup(@Body() signupDto: SignupDto) {
-    return this.authService.signup(signupDto.email, signupDto.password, signupDto.name);
+    return this.authService.signup({ signupDto });
   }
 
   @Post('login')
@@ -27,7 +27,10 @@ export class AuthController {
     return this.authService.verifyOtp(verifyOtp);
   }
 
-
+  @Post('google-auth')
+  async googleSign(@Body() signupDto: SignupDto) {
+    return this.authService.googleSign({ signupDto });
+  }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('protected')
